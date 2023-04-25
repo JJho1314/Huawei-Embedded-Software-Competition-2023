@@ -43,7 +43,6 @@ public:
   int idx;             //边的idx，按输入顺序排，从0开始
   int ch_occ_num = 0;  //通道占用数量
   // vector<int> magnifier;  // 放大器
-
   edge(int s, int d, int w, int i) : src(s), dst(d), weight(w), idx(i)
   {
   }
@@ -60,7 +59,7 @@ vector<edge> Graph[max_N];
 //根据idx，存入对于的边，方便调用
 vector<edge> edge_idx[max_M];
 
-//-------------------------------------------------------------------------
+//-----------------------------------业务类--------------------------------------
 class transaction
 {
 public:
@@ -81,7 +80,8 @@ public:
   {
   }
 };
-//存储业务
+
+//---------------------------------用于存储业务的-----------------------------------
 vector<transaction> tranx;
 
 class Add_edge
@@ -102,15 +102,12 @@ void dijkstra(transaction& tran, int begin, int end);
 vector<int> channel_is_spare(int edge_idx);  //判断某条边的通道是否占满（若已满 返回1，否则返回0）
 vector<int> vectors_intersection(vector<int> v1, vector<int> v2);  //计算通道交集
 void dfs(int begin, int end, int visit[]);
-void cost(vector<vector<int>> all_path);
+void cost(vector<vector<int>> all_path, vector<edge>* after_egde_idx);
 void best_path_verticle(transaction& tran, int src, int dst, vector<int> best_path);
 void all_permutations(vector<vector<int>> vec, vector<vector<int>>& choose_path, uint32_t level = 0);
 
 //------------------------------------------------判断输入的path是否畅通----------------------------------------------------
 //------------------------------------------------判断输入的path是否畅通----------------------------------------------------
-//------------------------------------------------判断输入的path是否畅通----------------------------------------------------
-//------------------------------------------------判断输入的path是否畅通----------------------------------------------------
-
 bool isPathGo(vector<int> path)
 {
   vector<int> first = channel_is_spare(path[0]);
@@ -134,6 +131,7 @@ bool cmp(int i, int j)
   return edge_idx[i][0].ch_occ_num > edge_idx[j][0].ch_occ_num;
 }
 
+//------------------------------------------------按照通道数量进行排序------------------------------------------
 vector<int> sortedByChannelNumber(vector<int> path)
 {
   // sort(path.begin(), path.end(), cmp);
@@ -168,7 +166,7 @@ int is_add_edge(vector<int> best_path)
 void init()
 {
   //节点数量N、连边数量M、业务数量T、单边通道数量P、最大衰减距离D
-  cout << "节点数量N、连边数量M、业务数量T、单边通道数量P、最大衰减距离D" << endl;
+  // cout << "节点数量N、连边数量M、业务数量T、单边通道数量P、最大衰减距离D" << endl;
   cin >> N >> M >> T >> P >> D;
 
   for (int i = 0; i < M; i++)
@@ -193,6 +191,7 @@ void init()
   }
 }
 
+//-----------------------------------通道是否空闲-----------------------------------
 vector<int> channel_is_spare(int edge_idx)
 {
   vector<int> ret;
@@ -206,6 +205,7 @@ vector<int> channel_is_spare(int edge_idx)
   return ret;
 }
 
+//-----------------------------------路径上是否有相交的通道出现--------------------------------------
 vector<int> vectors_intersection(vector<int> v1, vector<int> v2)
 {
   vector<int> v;
@@ -297,77 +297,6 @@ void dfs(int begin, int end, int visit[])
         all_path.push_back(choose_path[i]);
       }
     }
-    // all_verticle.push_back(result_verticle);
-    // int src,dst;
-
-    // //根据顶点存入路径
-    // vector<int> ret;
-    // vector<vector<int>> result_path;
-    // for(int i=0;i<result_verticle.size()-1;i++){
-
-    //     src=result_verticle[i];
-    //     dst=result_verticle[i+1];
-    //     ret.clear();
-    //     // vector<int> ret;
-    //     // ret.clear();
-    //     for(auto &e:Graph[src]){
-    //         if(e.dst == dst){
-    //             ret.push_back(e.idx);
-    //         }
-    //     }
-    //     result_path.push_back(ret);
-    // }
-    // // result_path.push_back(ret);
-    // indexes.resize(result_path.size());
-    // vector<vector<int>> choose_path;
-
-    // all_permutations(result_path,choose_path);
-
-    // for(int i =0; i<choose_path.size() ;i++){
-    //     all_path.push_back(choose_path[i]);
-    // }
-
-    // for(int k=0;k<choose_path.size() ;k++){
-    //     for(int i=0;i<choose_path[k].size();i++){
-    //         choose_path[k].pop_back();
-    //     }
-    // }
-
-    // // result_path清零
-    // for(int j=0;j<result_path.size();j++){
-    //     for(int i=0;i< result_path[j].size();i++){
-    //         result_path[j].pop_back();
-    //     }
-
-    // }
-
-    // int flag=0;
-    // for(auto &e:Graph[src]){
-
-    //     if(e.dst == dst){
-    //         if(flag==0){
-    //             result_path.push_back(e.idx);
-
-    //             flag++;
-    //         }
-
-    //         //怎么解决两个顶点间有多条边，弹出之前的边的idx，再重新push_back
-    //         else{
-
-    //             temp[flag] = result_path;
-    //             temp[flag].pop_back();
-    //             temp[flag].push_back(e.idx);
-    //             flag++;
-    //             // result_path_all.push_back(temp);
-    //         }
-
-    //     }
-    // }
-
-    // all_path.push_back(result_path);
-    // for(int j = 0; j< M;j++){
-    //     all_path.push_back(result_path_all[j]);
-    // }
   }
   for (auto& e : Graph[begin])
   {
@@ -388,7 +317,7 @@ int add_edge_num;
 int add_magnifier_num;
 vector<pair<int, int>> add_edge_verticle;
 
-void cost(vector<vector<int>> all_path)
+void cost(vector<vector<int>> all_path, vector<edge>* after_egde_idx)
 {
   //定义当前临时长度
   int current_M = M;
@@ -401,6 +330,8 @@ void cost(vector<vector<int>> all_path)
     vector<int> first = channel_is_spare(path[0]);
     vector<int> second;
     vector<int> intersection;
+    vector<edge>* tem_edge_idx;
+    tem_edge_idx = after_egde_idx;
     for (int i = 1; i < path.size(); i++)
     {
       second = channel_is_spare(path[i]);
@@ -488,8 +419,8 @@ void cost(vector<vector<int>> all_path)
 
         path[it] = current_M;
         current_M = current_M + 1;
-        edge_idx[path[it]].push_back(edge(edge_idx[new_path[i]][0].src, edge_idx[new_path[i]][0].dst,
-                                          edge_idx[new_path[i]][0].weight, path[it]));
+        tem_edge_idx[path[it]].push_back(edge(tem_edge_idx[new_path[i]][0].src, tem_edge_idx[new_path[i]][0].dst,
+                                              tem_edge_idx[new_path[i]][0].weight, path[it]));
 
         if (isPathGo(path))
         {
@@ -506,26 +437,6 @@ void cost(vector<vector<int>> all_path)
 
       for (int i = 0; i < path.size(); i++)
       {
-        //如果该边是重新加入的，则需要重新考虑新加边的权值（取存在边的最小权重）
-        // if (find(add_edge_idx.begin(), add_edge_idx.end(), path[i]) != add_edge_idx.end())
-        // {
-        //   int ver1 = edge_idx[path[i]][0].src;
-        //   int ver2 = edge_idx[path[i]][0].dst;
-        //   int min_weight = INF;
-        //   for (auto& e : Graph[ver1])
-        //   {
-        //     if (e.dst == ver2)
-        //     {
-        //       min_weight = (e.weight < min_weight) ? e.weight : min_weight;
-        //     }
-        //   }
-        //   weight = min_weight;
-        // }
-        // else
-        // {
-        //   weight = edge_idx[path[i]][0].weight;
-        // }
-
         //当前D减去要走的路径权重
         D_current -= edge_idx[path[i]][0].weight;
 
@@ -539,10 +450,12 @@ void cost(vector<vector<int>> all_path)
 
       //计算加放大器的开销
       money = add_edge_num * 1000000 + path.size() + add_magnifier_num * 10;
+
       if (money < min_money)
       {
         min_money = money;
         best_path = path;
+        after_egde_idx = tem_edge_idx;
       }
     }
   }
@@ -715,11 +628,12 @@ void dijkstra(transaction& tran, int begin, int end)
     dfs(begin, end, visit);
 
     //获得best_path
-    cost(all_path);
+    cost(all_path, edge_idx);
 
     vector<int> first = channel_is_spare(best_path[0]);
     vector<int> second;
     vector<int> intersection;
+
     for (int k = 1; k >= 0; k--)
     {
       second = channel_is_spare(best_path[k]);
@@ -728,8 +642,9 @@ void dijkstra(transaction& tran, int begin, int end)
 
       first = intersection;
     }
+
     // 有空余通道,只需修改路径 不需要加边
-    // 判断best_path对应的index是否在原始的path里面
+    // 判断best_path对应的index是否在原始的path里面，返回0表示没有增加新的边
     if (intersection.size() > 0 && is_add_edge(best_path) == 0)
     {
       int channel_idx = intersection[0];
@@ -766,8 +681,11 @@ void dijkstra(transaction& tran, int begin, int end)
       tran.path = best_path;
     }
     else
+    // 表示增加边
     {
+      // 边上的通道数量
       int edge_spare_channel_cnt[P] = { 0 };
+
       //遍历路径上的所有边
       //记录每个通道的空闲数
       for (int i = 0; i < best_path.size(); i++)
@@ -795,56 +713,60 @@ void dijkstra(transaction& tran, int begin, int end)
           channel_idx = i;
         }
       }
+
       tran.channel_idx = channel_idx;
+
+      // 循环最好的路径，找到对应的空闲通道
+      int max_index = -1;
+
       for (int i = 0; i < best_path.size(); i++)
       {
-        if (edge_channel[best_path[i]].stat[channel_idx] == 1)
+        // 得到最好路径中最大的index
+        if (best_path[i] >= M)
         {
+          // 得到这条新加边的两个端点
           int ver1 = edge_idx[best_path[i]][0].src;
           int ver2 = edge_idx[best_path[i]][0].dst;
-          int min_weight = INF;
-          for (auto& e : Graph[ver1])
-          {
-            if (e.dst == ver2)
-            {
-              min_weight = (e.weight < min_weight) ? e.weight : min_weight;
-            }
-          }
           //加边 同时图graph和edge_idx也要改变,还要修改best_path中边的index
           add_edge.num++;
           add_edge.begin_end.push_back(make_pair(ver1, ver2));
-          Graph[ver1].push_back(edge(ver1, ver2, min_weight, M - 1 + add_edge.num));
-          Graph[ver2].push_back(edge(ver2, ver1, min_weight, M - 1 + add_edge.num));
-          edge_idx[M - 1 + add_edge.num].push_back(edge(ver1, ver2, min_weight, M - 1 + add_edge.num));
-          edge_idx[M - 1 + add_edge.num].push_back(edge(ver2, ver1, min_weight, M - 1 + add_edge.num));
+          //更新全局graph
+          Graph[ver1].push_back(edge(ver1, ver2, edge_idx[best_path[i]][0].weight, M - 1 + add_edge.num));
+          Graph[ver2].push_back(edge(ver2, ver1, edge_idx[best_path[i]][0].weight, M - 1 + add_edge.num));
+          edge_idx[M - 1 + add_edge.num].push_back(
+              edge(ver1, ver2, edge_idx[best_path[i]][0].weight, M - 1 + add_edge.num));
+          edge_idx[M - 1 + add_edge.num].push_back(
+              edge(ver2, ver1, edge_idx[best_path[i]][0].weight, M - 1 + add_edge.num));
           best_path[i] = M - 1 + add_edge.num;
         }
       }
-
-      best_path_verticle(tran, begin, end, best_path);
-      //计算放大器数量
-      add_magnifier_num = 0;
-      int weight = 0;
-      int D_current = D;
-      for (int i = 0; i < best_path.size(); i++)
-      {
-        weight = edge_idx[best_path[i]][0].weight;
-        D_current -= weight;
-        if (D_current < 0)
-        {
-          // add_magnifier_num++;
-          tran.magnifier_num++;
-          tran.magnifier.push_back(tran.verticle[i]);
-          D_current = D - weight;
-        }
-      }
-
-      //清空之前存储的path
-      tran.path.clear();
-      //将best_path 逆置
-      reverse(best_path.begin(), best_path.end());
-      tran.path = best_path;
     }
+
+    // 让业务通过一遍
+    best_path_verticle(tran, begin, end, best_path);
+
+    //计算放大器数量
+    add_magnifier_num = 0;
+    int weight = 0;
+    int D_current = D;
+    for (int i = 0; i < best_path.size(); i++)
+    {
+      weight = edge_idx[best_path[i]][0].weight;
+      D_current -= weight;
+      if (D_current < 0)
+      {
+        // add_magnifier_num++;
+        tran.magnifier_num++;
+        tran.magnifier.push_back(tran.verticle[i]);
+        D_current = D - weight;
+      }
+    }
+
+    //清空之前存储的path
+    tran.path.clear();
+    //将best_path 逆置
+    reverse(best_path.begin(), best_path.end());
+    tran.path = best_path;
   }
 }
 
@@ -852,7 +774,7 @@ int main()
 {
   init();
 
-  // 对每个顶点的边按距离进行
+  // 对每个顶点的边按距离进行排序
   for (int i = 0; i < tranx.size(); i++)
   {
     int begin = tranx[i].begin;
