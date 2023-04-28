@@ -96,6 +96,7 @@ short int isPathGo(vector<short int> path, vector<edge> &edge_tmp)
     return -1;
 }
 
+//----------------------------------------------------------按照通道数量进行排序-------------------------------------------------------
 int partition(vector<short int> &path, int left, int right)
 {
     int pivot = path[right];
@@ -128,6 +129,7 @@ vector<short int> sortedByChannelNumber(vector<short int> path)
     return path;
 }
 
+//-------------------------------------------------------------判断best_path中index是否都在edge_idx中----------------------------------------------
 short int is_add_edge(vector<short int> &best_path)
 {
     short int max_index = -1;
@@ -140,6 +142,9 @@ short int is_add_edge(vector<short int> &best_path)
 
 void init()
 {
+    // 节点数量N、连边数量M、业务数量T、单边通道数量P、最大衰减距离D
+    //  cout << "节点数量N、连边数量M、业务数量T、单边通道数量P、最大衰减距离D"
+    //  << endl;
     short int T; // 业务数量
 
     cin >> N >> M >> T >> P >> D;
@@ -170,6 +175,7 @@ short int add_edge_num;
 short int add_magnifier_num;
 vector<pair<short int, short int>> add_edge_verticle;
 
+//-------------------------------------------------------------bfs-----------------------------------------------------------------------
 void new_bfs(short int begin, short int end, transaction &tran)
 {
     queue<vector<short int>> q;
@@ -246,10 +252,11 @@ void new_bfs(short int begin, short int end, transaction &tran)
     }
 }
 
+//-------------------------------------------------------输入边和输出加边后的边------------------------------------------------
 void addedge(vector<short int> current_path, vector<edge> &after_egde_idx)
 {
     // 按照通道数进行排序
-    vector<short int> new_path = current_path;
+    vector<short int> new_path = sortedByChannelNumber(current_path);
     short int current_M = M;
     // 优先从占用通道数最多的开始加边
     for (short int i = 0; i < new_path.size(); i++)
@@ -442,6 +449,10 @@ void dijkstra(transaction &tran, short int begin, short int end)
 
 int main()
 {
+
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
     init();
     for (short int i = 0; i < tranx.size(); i++)
     {
