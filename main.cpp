@@ -255,15 +255,16 @@ void all_permutations(vector<vector<int>> result_path, vector<vector<int>> &choo
 vector<vector<int>> all_path_node_v;
 vector<vector<int>> all_path_v;
 
-vector<vector<int>> all_node_v;
-vector<int> result_verticle;
+// vector<vector<int>> all_node_v;
+// vector<int> result_verticle;
 
-vector<int> ret;
+// vector<int> ret;
 
 void new_bfs(int begin, int end)
 {
     queue<vector<int>> q;
     queue<vector<bool>> q_st;
+    queue<vector<int>> q_path;
     q.push({begin});
     q_st.push(vector<bool>(max_N, false));
 
@@ -274,7 +275,12 @@ void new_bfs(int begin, int end)
         q.pop();
         vector<bool> st = q_st.front();
         q_st.pop();
-
+        vector<int> new_ret;
+        if (q_path.size() > 0)
+        {
+            new_ret = q_path.front();
+            q_path.pop();
+        }
         // 路径的最后一个元素
         int last = path.back();
         st[last] = true;
@@ -282,23 +288,23 @@ void new_bfs(int begin, int end)
         // 若路径的最后一个元素与 end 相等，说明已经找到一条路径，加入 all
         if (last == end)
         {
-            ret.clear();
-            for (int i = 0; i < path.size() - 1; i++)
-            {
-                int src = path[i];
-                int dst = path[i + 1];
+            // ret.clear();
+            // for (int i = 0; i < path.size() - 1; i++)
+            // {
+            //     int src = path[i];
+            //     int dst = path[i + 1];
 
-                for (auto &e : Graph[src])
-                {
-                    if (e.src == src && e.dst == dst)
-                    {
-                        ret.push_back(e.idx);
-                    }
-                }
-            }
+            //     for (auto &e : Graph[src])
+            //     {
+            //         if (e.src == src && e.dst == dst)
+            //         {
+            //             ret.push_back(e.idx);
+            //         }
+            //     }
+            // }
 
             // 把src和end对应的边加入到result_path中
-            all_path_v.push_back(ret);
+            all_path_v.push_back(new_ret);
             // set<vector<int>> all_path_quchong_set(all_path_v.begin(), all_path_v.end()); // 在构造函数中可以直接实现vector转set
             // all_path_v.clear();
             // all_path_v.assign(all_path_quchong_set.begin(), all_path_quchong_set.end()); // 用assign实现set转vector
@@ -311,13 +317,23 @@ void new_bfs(int begin, int end)
             {
                 vector<int> next_path(path);
                 next_path.push_back(e.dst);
-
                 vector<bool> next_st(st);
                 next_st[e.dst] = true;
-
                 // 添加该条路径，等待后续 bfs
                 q.push(next_path);
                 q_st.push(next_st);
+                if (q_path.size() > 0)
+                {
+                    vector<int> nest_edge(new_ret);
+                    nest_edge.push_back(e.idx);
+                    q_path.push(nest_edge);
+                }
+                else
+                {
+                    vector<int> nest_edge;
+                    nest_edge.push_back(e.idx);
+                    q_path.push(nest_edge);
+                }
             }
         }
     }
@@ -881,8 +897,8 @@ void dijkstra(transaction &tran, int begin, int end)
         int visit[N] = {0};
         best_path.clear();
         all_path_node_v.clear();
-        all_node_v.clear();
-        result_verticle.clear();
+        // all_node_v.clear();
+        // result_verticle.clear();
 
         // path verticle的存储顺序与之前不同 顺序src——>......——>end
 
@@ -901,7 +917,7 @@ void dijkstra(transaction &tran, int begin, int end)
         vector<int> second;
         vector<int> intersection;
 
-        for (int k = 1; k >= 0; k--)
+        for (int k = 1; k < best_path.size(); k++)
         {
             second = channel_is_spare(best_path[k], tem_edge_idx);
 
