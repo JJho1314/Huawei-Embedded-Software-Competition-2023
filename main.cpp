@@ -6,7 +6,7 @@
 #include <queue>
 #include <string>
 #include <vector>
-// #include "tools_mem_used.h"
+
 using namespace ::std;
 #define max_N 1350
 #define max_P 80
@@ -112,25 +112,25 @@ vector<int> best_node;
 void addedge(vector<int> current_path, vector<edge> &after_egde_idx, vector<int> &pre_result)
 {
     // 按照通道数进行排序
-    vector<int> new_path = sortedByChannelNumber(current_path);
+    // vector<int> new_path = sortedByChannelNumber(current_path);
     vector<edge> tem_edge_idx = after_egde_idx;
     int add_edge_num;
     int current_M = M;
     // 优先从占用通道数最多的开始加边
-    for (int i = 0; i < new_path.size(); i++)
+    for (int i = 0; i < current_path.size(); i++)
     {
         // 需要加边
         // add_edge_idx.push_back(new_path[i]);
         // 边数+1
         add_edge_num++;
-        auto it = find(current_path.begin(), current_path.end(), new_path[i]) - current_path.begin();
+        // auto it = find(current_path.begin(), current_path.end(), new_path[i]) - current_path.begin();
 
-        current_path[it] = current_M;
+        current_path[i] = current_M;
         current_M = current_M + 1;
-        tem_edge_idx.push_back(edge(tem_edge_idx[new_path[i]].src,
-                                    tem_edge_idx[new_path[i]].dst,
-                                    tem_edge_idx[new_path[i]].weight,
-                                    current_path[it], P));
+        tem_edge_idx.push_back(edge(tem_edge_idx[current_path[i]].src,
+                                    tem_edge_idx[current_path[i]].dst,
+                                    tem_edge_idx[current_path[i]].weight,
+                                    current_path[i], P));
 
         int channel_idx = isPathGo(current_path, tem_edge_idx);
         if (channel_idx != -1)
@@ -351,7 +351,5 @@ int main()
         cout << endl;
     }
 
-    // float mem_used_mb = (Common_tools::get_RSS_Mb());
-    // printf("Memory used (Mb): %f Mb \n", mem_used_mb);
     return 0;
 }
