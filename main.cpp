@@ -27,6 +27,7 @@ public:
     short int idx;            // 边的idx，按输入顺序排，从0开始
     short int ch_occ_num = 0; // 通道占用数量
     vector<short int> stat;
+    short int pre_idx;
     edge(short int s, short int d, short int w, short int i, short int p_num)
         : src(s), dst(d), weight(w), idx(i)
     {
@@ -249,7 +250,7 @@ void new_bfs(short int begin, short int end, transaction &tran)
 void addedge(vector<short int> current_path, vector<edge> &after_egde_idx)
 {
     // 按照通道数进行排序
-    vector<short int> new_path = current_path;
+    vector<short int> new_path = sortedByChannelNumber(current_path);
     short int current_M = M;
     // 优先从占用通道数最多的开始加边
     for (short int i = 0; i < new_path.size(); i++)
@@ -263,6 +264,8 @@ void addedge(vector<short int> current_path, vector<edge> &after_egde_idx)
                                          after_egde_idx[new_path[i]].dst,
                                          after_egde_idx[new_path[i]].weight,
                                          current_path[it], P));
+
+        after_egde_idx[after_egde_idx.size() - 1].pre_idx = new_path[i];
 
         if (isPathGo(current_path, after_egde_idx) != -1)
         {
@@ -407,12 +410,33 @@ void dijkstra(transaction &tran, short int begin, short int end)
                 add_edge.num++;
                 add_edge.begin_end.emplace_back(make_pair(ver1, ver2));
                 // 更新全局graph
-                Graph[ver1].emplace_back(edge(ver1, ver2,
-                                              edge_idx[best_path[i]].weight,
-                                              M - 1 + add_edge.num, P));
-                Graph[ver2].emplace_back(edge(ver2, ver1,
-                                              edge_idx[best_path[i]].weight,
-                                              M - 1 + add_edge.num, P));
+                // Graph[ver1].emplace_back(edge(ver1, ver2,
+                //                               edge_idx[best_path[i]].weight,
+                //                               M - 1 + add_edge.num, P));
+                // Graph[ver2].emplace_back(edge(ver2, ver1,
+                //                               edge_idx[best_path[i]].weight,
+                //                               M - 1 + add_edge.num, P));
+
+                // 直接更新图，不增加边来增大内存
+                for (int j = 0; j < Graph[ver1].size(); j++)
+                {
+                    if (Graph[ver1][j].idx == edge_idx[best_path[i]].pre_idx)
+                    {
+                        Graph[ver1][j].ch_occ_num = 0;
+                        Graph[ver1][j].stat.clear();
+                        Graph[ver1][j].idx = M;
+                    }
+                }
+
+                for (int j = 0; j < Graph[ver2].size(); j++)
+                {
+                    if (Graph[ver2][j].idx == edge_idx[best_path[i]].pre_idx)
+                    {
+                        Graph[ver2][j].ch_occ_num = 0;
+                        Graph[ver2][j].stat.clear();
+                        Graph[ver2][j].idx = M;
+                    }
+                }
             }
             edge_idx[best_path[i]].stat[channel_idx] = -1;
         }
